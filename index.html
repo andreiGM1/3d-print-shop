@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LayerByLayer — Studio de Printare 3D & Vizualizator STL Three.js România</title>
+  <meta name="description" content="Servicii profesionale de printare 3D FDM & Resin în România. Încarcă fișierul STL direct în browser pentru vizualizare 3D interactivă, calcul automat de volum și cotație instantanee.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Three.js & Loaders from CDN with local fallback -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+</head>
+<body class="dark-theme">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container nav-content">
+      <a href="#" class="brand-logo">
+        <span class="logo-icon">△</span>
+        <span class="logo-text">Layer<strong>ByLayer</strong> <span class="tag">3D Studio</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#viewer3d">Vizualizator 3D STL</a>
+        <a href="#calculator">Simulator Cost</a>
+        <a href="#servicii">Domenii</a>
+        <a href="#materiale">Materiale</a>
+        <a href="#comanda" class="btn btn-primary nav-cta">Comandă WhatsApp</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-section">
+    <div class="glow-orb"></div>
+    <div class="container hero-content">
+      <div class="hero-badge">🖨️ Printare FDM & Rășină 8K Ultra-Precise • Vizualizator STL WebGL</div>
+      <h1 class="hero-title">
+        Dăm formă fizică ideilor tale, <br>
+        <span class="gradient-text">strat cu strat.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Încarcă fișierul tău .STL direct în browser: inspectează modelul 3D, calculează automat volumul net în cm³ și află greutatea exactă a filamentului înainte de printare.
+      </p>
+      <div class="hero-actions">
+        <a href="#viewer3d" class="btn btn-primary btn-lg">Deschide Vizualizator 3D STL</a>
+        <a href="#calculator" class="btn btn-outline btn-lg">Calculează Prețul Printării</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Three.js 3D STL Viewer Section -->
+  <section class="section viewer-section" id="viewer3d">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">TEHNOLOGIE WEBGL & THREE.JS</span>
+        <h2>Vizualizator 3D STL & Slicer Instant</h2>
+        <p>Inspectează geometria piesei tale în 3D pe platanul de printare, verifică volumul calculat matematic și simulează consumul de material.</p>
+      </div>
+
+      <div class="viewer-main-grid">
+        <!-- 3D Canvas Box -->
+        <div class="canvas-panel">
+          <!-- Demo Model Selector & Upload Controls -->
+          <div class="viewer-top-bar">
+            <div class="demo-selector-group">
+              <span class="bar-label">Modele Demo:</span>
+              <button class="btn-demo-stl active" data-model="gear">⚙️ Roată Dințată</button>
+              <button class="btn-demo-stl" data-model="vase">🏺 Vază Spiralată</button>
+              <button class="btn-demo-stl" data-model="bracket">📐 Suport Rezistent</button>
+              <button class="btn-demo-stl" data-model="cube">📦 Cub Calibrare 3D</button>
+            </div>
+
+            <div class="upload-stl-btn-wrap">
+              <input type="file" id="stlFileInput" accept=".stl,.obj" style="display: none;">
+              <button class="btn btn-secondary btn-sm" id="btnTriggerUpload">
+                📂 Încarcă Fișierul Tău (.STL)
+              </button>
+            </div>
+          </div>
+
+          <!-- WebGL Three.js Container -->
+          <div class="three-viewport" id="threeViewportContainer">
+            <div class="viewport-overlay-hint">
+              <span>🖱️ Trage pentru rotire • Scroll pentru zoom • Click dreapta pentru pan</span>
+            </div>
+
+            <div class="viewport-controls-hud">
+              <button class="hud-tool-btn" id="btnToggleWireframe" title="Comută Rețea Triunghiuri">Wireframe: OFF</button>
+              <button class="hud-tool-btn" id="btnTogglePlateGrid" title="Comută Grilă Platan">Platan 250mm: ON</button>
+              <button class="hud-tool-btn" id="btnResetView" title="Centrează Camera">Centrare 3D</button>
+              <div class="filament-color-picker">
+                <span style="font-size: 0.75rem; color: #fff;">Filament:</span>
+                <span class="color-dot active" data-color="#f97316" style="background: #f97316;" title="Portocaliu LayerByLayer"></span>
+                <span class="color-dot" data-color="#38bdf8" style="background: #38bdf8;" title="Cyan Electric"></span>
+                <span class="color-dot" data-color="#94a3b8" style="background: #94a3b8;" title="Gri Metalic"></span>
+                <span class="color-dot" data-color="#10b981" style="background: #10b981;" title="Verde Neon"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Metrics & Geometry Analysis Card -->
+        <div class="metrics-panel">
+          <div class="panel-header">
+            <span class="panel-tag">CALCUL MATEMATIC GEOMETRIC</span>
+            <h3 id="stlFileNameTitle">Roata-Dintata-Industriala.stl</h3>
+          </div>
+
+          <div class="metrics-list">
+            <div class="metric-row">
+              <span class="m-lbl">📐 Dimensiuni Bounding Box:</span>
+              <strong class="m-val" id="stlDimensionsVal">60.0 × 60.0 × 25.0 mm</strong>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">💧 Volum Net al Piesei:</span>
+              <strong class="m-val highlight-cyan" id="stlVolumeVal">42.8 cm³</strong>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">🔺 Complexitate Geometrie:</span>
+              <strong class="m-val" id="stlTrianglesVal">8.640 Triunghiuri</strong>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">🧵 Material Selectat:</span>
+              <select id="stlMaterialSelect" class="compact-select">
+                <option value="pla" data-density="1.24" data-rate="0.8">PLA Eco (1.24 g/cm³) — 0.8 RON/g</option>
+                <option value="petg" data-density="1.27" data-rate="1.1" selected>PETG Rezistent (1.27 g/cm³) — 1.1 RON/g</option>
+                <option value="abs" data-density="1.04" data-rate="1.3">ABS / ASA Tehnic (1.04 g/cm³) — 1.3 RON/g</option>
+                <option value="resin" data-density="1.15" data-rate="2.2">Rășină 8K UV (1.15 g/cm³) — 2.2 RON/g</option>
+              </select>
+            </div>
+            <div class="metric-row">
+              <span class="m-lbl">⚙️ Umplere Interioară (Infill):</span>
+              <select id="stlInfillSelect" class="compact-select">
+                <option value="0.15">15% Decorativ</option>
+                <option value="0.30" selected>30% Standard Rezistent</option>
+                <option value="0.60">60% Piese Mecanice</option>
+                <option value="1.00">100% Solid</option>
+              </select>
+            </div>
+          </div>
+
+          <hr class="panel-divider">
+
+          <div class="pricing-summary-box">
+            <div class="price-data-line">
+              <span>Greutate Filament Calculată:</span>
+              <strong id="stlWeightResult" style="color: #38bdf8; font-size: 1.15rem;">54.4 g</strong>
+            </div>
+            <div class="price-data-line">
+              <span>Timp Estimat pe Platan:</span>
+              <strong id="stlTimeResult">~2h 30m</strong>
+            </div>
+            <div class="price-data-line total-line">
+              <span>Cotație Totală Estimat:</span>
+              <strong id="stlCostResult">75 RON</strong>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="btnSyncWithOrder" style="margin-top: 14px; font-weight: 700;">
+            🚀 Trimite Modelul & Comandă pe WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive 3D Print Cost Estimator (Manual Mode) -->
+  <section class="section calc-section" id="calculator">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">SIMULATOR RAPID</span>
+        <h2>Simulator Manual de Preț</h2>
+        <p>Alege materialul și greutatea estimată sau numărul de piese pentru o cotație preliminară transparentă.</p>
+      </div>
+
+      <div class="calc-card">
+        <div class="calc-inputs-grid">
+          <div class="form-group">
+            <label for="materialSelect">Tehnologie & Material</label>
+            <select id="materialSelect">
+              <option value="pla" data-price="0.8">PLA Eco-Friendly (Standard prototyping) — 0.8 RON/g</option>
+              <option value="petg" data-price="1.1" selected>PETG Rezistent UV & Mecanic (Piese funcționale) — 1.1 RON/g</option>
+              <option value="abs" data-price="1.3">ABS / ASA Rezistent Termic — 1.3 RON/g</option>
+              <option value="resin" data-price="2.2">Rășină UV 8K (Figurine & Detalii microscopice) — 2.2 RON/g</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="weightInput">Greutate Estimată (Grame): <strong id="weightValLabel">100g</strong></label>
+            <input type="range" id="weightInput" min="10" max="1500" step="10" value="100">
+          </div>
+
+          <div class="form-group">
+            <label for="infillSelect">Densitate Interioară (Infill)</label>
+            <select id="infillSelect">
+              <option value="1">15% (Modele decorative / vizuale)</option>
+              <option value="1.2" selected>30% (Standard rezistență)</option>
+              <option value="1.5">60% (Piese supuse la efort mecanic)</option>
+              <option value="1.8">100% Solid (Rezistență industrială)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="quantityInput">Număr Bucăți</label>
+            <input type="number" id="quantityInput" min="1" max="100" value="1">
+          </div>
+        </div>
+
+        <div class="calc-result-bar">
+          <div class="result-details">
+            <span class="res-sub">Timp estimat print: <strong id="timeEstLabel">~4h 30m</strong></span>
+            <span class="res-sub">Livrare: <strong>24-48h prin Curier Rapid</strong></span>
+          </div>
+          <div class="result-price">
+            <span class="price-lbl">Preț Total Estimat:</span>
+            <span class="price-sum" id="totalPriceLabel">132 RON</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services / Portfolio -->
+  <section class="section services-section" id="servicii">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">DOMENII DE APLICARE</span>
+        <h2>Ce Printăm în Fiecare Zi</h2>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="srv-icon">🏛️</div>
+          <h3>Machete Arhitecturale</h3>
+          <p>Machete volumetrice și de detaliu pentru studenți la arhitectură și dezvoltatori imobiliari.</p>
+        </div>
+        <div class="service-card">
+          <div class="srv-icon">⚙️</div>
+          <h3>Piese de Schimb & Reper Auto</h3>
+          <p>Elemente din plastic rupte care nu se mai găsesc pe piață (cleme, roți dințate, suporturi).</p>
+        </div>
+        <div class="service-card">
+          <div class="srv-icon">📦</div>
+          <h3>Carcase Electronice IoT</h3>
+          <p>Carcase custom pentru Arduino, Raspberry Pi, ESP32 cu decupaje perfecte pentru porturi.</p>
+        </div>
+        <div class="service-card">
+          <div class="srv-icon">✨</div>
+          <h3>Cadouri & Obiecte Etsy</h3>
+          <p>Lămpi litofanie personalizate, ghivece verticale hexagonale și taste personalizate pentru tastaturi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upload STL / Contact Form -->
+  <section class="section upload-section" id="comanda">
+    <div class="container">
+      <div class="upload-box">
+        <div class="upload-header">
+          <h2>Încarcă Fișierul Tău Pentru Ofertă Exactă</h2>
+          <p>Trimite-ne modelul tău în format .STL, .STEP, .OBJ sau o schiță cu dimensiuni pe WhatsApp.</p>
+        </div>
+
+        <form id="orderForm" class="upload-form">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="custName">Numele Tău</label>
+              <input type="text" id="custName" placeholder="Ex: Andrei Radu" value="Andrei Radu" required>
+            </div>
+            <div class="form-group">
+              <label for="custPhone">Telefon / WhatsApp</label>
+              <input type="tel" id="custPhone" placeholder="07xx xxx xxx" value="0722 889 900" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="custNotes">Descriere Proiect / Cerințe Speciale</label>
+            <textarea id="custNotes" rows="3" placeholder="Ex: Am nevoie de o piesă din PETG negru rezistentă la căldură, am fișierul STL verificat în vizualizator..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Trimite Solicitarea pe WhatsApp</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <p>&copy; 2026 LayerByLayer 3D Studio. Three.js WebGL Engine integrat. Toate drepturile rezervate.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
